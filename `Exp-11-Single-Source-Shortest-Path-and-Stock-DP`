@@ -75,3 +75,54 @@ int main() {
 
     return 0;
 }
+#Buy and Sell Stocks with Transaction Fee (Dynamic Programming)
+
+#include <stdio.h>
+
+int max(int a, int b) {
+    return (a > b) ? a : b;
+}
+
+int maxProfit(int prices[], int n, int fee) {
+    int hold = -prices[0];
+    int cash = 0;
+    int prevCash, i;
+
+    for (i = 1; i < n; i++) {
+        prevCash = cash;
+
+        cash = max(cash, hold + prices[i] - fee);
+        hold = max(hold, prevCash - prices[i]);
+    }
+
+    return cash;
+}
+
+int main() {
+    int n, fee, i;
+    int prices[1000];
+
+    printf("Enter number of days: ");
+    scanf("%d", &n);
+
+    if (n <= 0 || n > 1000) {
+        printf("Invalid number of days.\n");
+        return 1;
+    }
+
+    printf("Enter stock prices:\n");
+    for (i = 0; i < n; i++)
+        scanf("%d", &prices[i]);
+
+    printf("Enter transaction fee: ");
+    scanf("%d", &fee);
+
+    if (fee < 0) {
+        printf("Invalid transaction fee.\n");
+        return 1;
+    }
+
+    printf("Maximum profit: %d\n", maxProfit(prices, n, fee));
+
+    return 0;
+}
