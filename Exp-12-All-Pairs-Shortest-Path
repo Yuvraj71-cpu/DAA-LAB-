@@ -1,0 +1,91 @@
+
+#include <stdio.h>
+
+#define MAX 100
+#define INF 999999
+
+struct Edge {
+    int src, dest, weight;
+};
+
+int main() {
+    struct Edge edges[MAX * MAX];
+    int dist[MAX];
+    int V, E, source;
+    int i, j, u, v, w, changed;
+
+    printf("Enter number of vertices and edges: ");
+    scanf("%d %d", &V, &E);
+
+    if (V <= 0 || V > MAX || E < 0 || E > MAX * MAX) {
+        printf("Invalid graph size.\n");
+        return 1;
+    }
+
+    printf("Enter edges (source destination weight):\n");
+    for (i = 0; i < E; i++) {
+        scanf("%d %d %d", &edges[i].src,
+              &edges[i].dest, &edges[i].weight);
+
+        if (edges[i].src < 0 || edges[i].src >= V ||
+            edges[i].dest < 0 || edges[i].dest >= V) {
+            printf("Invalid vertex.\n");
+            return 1;
+        }
+    }
+
+    printf("Enter source vertex (0 to %d): ", V - 1);
+    scanf("%d", &source);
+
+    if (source < 0 || source >= V) {
+        printf("Invalid source.\n");
+        return 1;
+    }
+
+    for (i = 0; i < V; i++)
+        dist[i] = INF;
+
+    dist[source] = 0;
+
+    for (i = 1; i < V; i++) {
+        changed = 0;
+
+        for (j = 0; j < E; j++) {
+            u = edges[j].src;
+            v = edges[j].dest;
+            w = edges[j].weight;
+
+            if (dist[u] != INF &&
+                dist[u] + w < dist[v]) {
+                dist[v] = dist[u] + w;
+                changed = 1;
+            }
+        }
+
+        if (!changed)
+            break;
+    }
+
+    for (j = 0; j < E; j++) {
+        u = edges[j].src;
+        v = edges[j].dest;
+        w = edges[j].weight;
+
+        if (dist[u] != INF &&
+            dist[u] + w < dist[v]) {
+            printf("Negative weight cycle detected.\n");
+            return 0;
+        }
+    }
+
+    printf("\nShortest distances from vertex %d:\n", source);
+
+    for (i = 0; i < V; i++) {
+        if (dist[i] == INF)
+            printf("Vertex %d: Unreachable\n", i);
+        else
+            printf("Vertex %d: %d\n", i, dist[i]);
+    }
+
+    return 0;
+}
