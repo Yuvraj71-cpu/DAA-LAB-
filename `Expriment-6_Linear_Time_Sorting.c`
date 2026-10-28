@@ -1,0 +1,261 @@
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+#define MAX 1000
+
+void countingSort(int a[], int n) {
+    int max = a[0], min = a[0];
+
+    for (int i = 1; i < n; i++) {
+        if (a[i] > max)
+            max = a[i];
+        if (a[i] < min)
+            min = a[i];
+    }
+
+    int range = max - min + 1;
+    int *count = calloc(range, sizeof(int));
+
+    if (count == NULL) {
+        printf("Memory allocation failed.\n");
+        return;
+    }
+
+    for (int i = 0; i < n; i++)
+        count[a[i] - min]++;
+
+    int j = 0;
+    for (int i = 0; i < range; i++) {
+        while (count[i] > 0) {
+            a[j++] = i + min;
+            count[i]--;
+        }
+    }
+
+    free(count);
+}
+
+void bucketSort(float a[], int n) {
+    float bucket[MAX][MAX];
+    int count[MAX] = {0};
+
+    for (int i = 0; i < n; i++) {
+        int index = (int)(a[i] * n);
+
+        if (index >= n)
+            index = n - 1;
+        if (index < 0)
+            index = 0;
+
+        bucket[index][count[index]++] = a[i];
+    }
+
+    for (int i = 0; i < n; i++) {
+        for (int j = 1; j < count[i]; j++) {
+            float key = bucket[i][j];
+            int k = j - 1;
+
+            while (k >= 0 && bucket[i][k] > key) {
+                bucket[i][k + 1] = bucket[i][k];
+                k--;
+            }
+
+            bucket[i][k + 1] = key;
+        }
+    }
+
+    int pos = 0;
+    for (int i = 0; i < n; i++) {
+        for (int j = 0; j < count[i]; j++)
+            a[pos++] = bucket[i][j];
+    }
+}
+
+long long atMostK(int a[], int n, int k) {
+    int freq[MAX + 1] = {0};
+    int left = 0, distinct = 0;
+    long long total = 0;
+
+    if (k < 0)
+        return 0;
+
+    for (int right = 0; right < n; right++) {
+        if (freq[a[right]]++ == 0)
+            distinct++;
+
+        while (distinct > k) {
+            if (--freq[a[left]] == 0)
+                distinct--;
+            left++;
+        }
+
+        total += right - left + 1;
+    }
+
+    return total;
+}
+
+long long exactlyK(int a[], int n, int k) {
+    return atMostK(a, n, k) - atMostK(a, n, k - 1);
+}
+
+void minimizeSum(int a[], int n, int k) {
+    for (int i = 0; i < n; i++) {
+        if (a[i] < 0) {
+            printf("This operation supports non-negative elements only.\n");
+            return;
+        }
+    }
+
+    while (k > 0) {
+        int maxIndex = 0;
+
+        for (int i = 1; i < n; i++) {
+            if (a[i] > a[maxIndex])
+                maxIndex = i;
+        }
+
+        a[maxIndex] = (a[maxIndex] + 1) / 2;
+        k--;
+    }
+
+    long long sum = 0;
+
+    for (int i = 0; i < n; i++)
+        sum += a[i];
+
+    printf("Minimum sum: %lld\n", sum);
+}
+
+int main() {
+    int choice, n, k, a[MAX];
+
+    do {
+        printf("\n1. Counting Sort\n");
+        printf("2. Bucket Sort\n");
+        printf("3. Count Subarrays with Exactly K Distinct Elements\n");
+        printf("4. Minimize Array Sum After K Operations\n");
+        printf("0. Exit\n");
+        printf("Enter choice: ");
+        scanf("%d", &choice);
+
+        if (choice == 1) {
+            printf("Enter array size: ");
+            scanf("%d", &n);
+
+            if (n < 1 || n > MAX) {
+                printf("Invalid size.\n");
+                continue;
+            }
+
+            printf("Enter integer elements: ");
+            for (int i = 0; i < n; i++)
+                scanf("%d", &a[i]);
+
+            countingSort(a, n);
+
+            printf("Sorted array: ");
+            for (int i = 0; i < n; i++)
+                printf("%d ", a[i]);
+            printf("\n");
+
+        } else if (choice == 2) {
+            float b[MAX];
+
+            printf("Enter array size: ");
+            scanf("%d", &n);
+
+            if (n < 1 || n > MAX) {
+                printf("Invalid size.\n");
+                continue;
+            }
+
+            printf("Enter numbers between 0 and 1: ");
+            for (int i = 0; i < n; i++)
+                scanf("%f", &b[i]);
+
+            int valid = 1;
+            for (int i = 0; i < n; i++) {
+                if (b[i] < 0 || b[i] > 1)
+                    valid = 0;
+            }
+
+            if (!valid) {
+                printf("Values must be between 0 and 1.\n");
+                continue;
+            }
+
+            bucketSort(b, n);
+
+            printf("Sorted array: ");
+            for (int i = 0; i < n; i++)
+                printf("%.2f ", b[i]);
+            printf("\n");
+
+        } else if (choice == 3) {
+            printf("Enter array size: ");
+            scanf("%d", &n);
+
+            if (n < 1 || n > MAX) {
+                printf("Invalid size.\n");
+                continue;
+            }
+
+            printf("Enter non-negative elements (0 to 1000): ");
+            int valid = 1;
+
+            for (int i = 0; i < n; i++) {
+                scanf("%d", &a[i]);
+                if (a[i] < 0 || a[i] > MAX)
+                    valid = 0;
+            }
+
+            if (!valid) {
+                printf("Invalid array elements.\n");
+                continue;
+            }
+
+            printf("Enter K: ");
+            scanf("%d", &k);
+
+            if (k < 0 || k > n) {
+                printf("Invalid K.\n");
+                continue;
+            }
+
+            printf("Subarrays with exactly %d distinct elements: %lld\n",
+                   k, exactlyK(a, n, k));
+
+        } else if (choice == 4) {
+            printf("Enter array size: ");
+            scanf("%d", &n);
+
+            if (n < 1 || n > MAX) {
+                printf("Invalid size.\n");
+                continue;
+            }
+
+            printf("Enter non-negative elements: ");
+            for (int i = 0; i < n; i++)
+                scanf("%d", &a[i]);
+
+            printf("Enter number of operations: ");
+            scanf("%d", &k);
+
+            if (k < 0) {
+                printf("Invalid number of operations.\n");
+                continue;
+            }
+
+            minimizeSum(a, n, k);
+
+        } else if (choice != 0) {
+            printf("Invalid choice.\n");
+        }
+
+    } while (choice != 0);
+
+    return 0;
+}
