@@ -1,0 +1,223 @@
+#include <stdio.h>
+
+#define MAX 1000
+
+long long maxProduct(int arr[], int n) {
+    long long product = 1;
+    int negativeCount = 0, zeroCount = 0;
+    int smallestNegative = -1000000000;
+    int hasPositive = 0;
+
+    for (int i = 0; i < n; i++) {
+        if (arr[i] == 0) {
+            zeroCount++;
+            continue;
+        }
+
+        product *= arr[i];
+
+        if (arr[i] < 0) {
+            negativeCount++;
+            if (arr[i] > smallestNegative)
+                smallestNegative = arr[i];
+        } else {
+            hasPositive = 1;
+        }
+    }
+
+    if (zeroCount == n)
+        return 0;
+
+    if (negativeCount % 2 != 0)
+        product /= smallestNegative;
+
+    if (!hasPositive && negativeCount == 1) {
+        if (zeroCount > 0)
+            return 0;
+        return smallestNegative;
+    }
+
+    return product;
+}
+
+void swap(int *a, int *b) {
+    int temp = *a;
+    *a = *b;
+    *b = temp;
+}
+
+int partition(int arr[], int low, int high) {
+    int pivot = arr[high];
+    int i = low;
+
+    for (int j = low; j < high; j++) {
+        if (arr[j] >= pivot) {
+            swap(&arr[i], &arr[j]);
+            i++;
+        }
+    }
+
+    swap(&arr[i], &arr[high]);
+    return i;
+}
+
+int quickSelect(int arr[], int low, int high, int k) {
+    if (low <= high) {
+        int pivotIndex = partition(arr, low, high);
+
+        if (pivotIndex == k)
+            return arr[pivotIndex];
+
+        if (pivotIndex > k)
+            return quickSelect(arr, low, pivotIndex - 1, k);
+
+        return quickSelect(arr, pivotIndex + 1, high, k);
+    }
+
+    return -1;
+}
+
+long long fibMemo[93];
+
+long long fibonacci(int n) {
+    if (n <= 1)
+        return n;
+
+    if (fibMemo[n] != -1)
+        return fibMemo[n];
+
+    fibMemo[n] = fibonacci(n - 1) + fibonacci(n - 2);
+    return fibMemo[n];
+}
+
+int smallestMissingPositive(int arr[], int n) {
+    int i = 0;
+
+    while (i < n) {
+        if (arr[i] > 0 && arr[i] <= n &&
+            arr[arr[i] - 1] != arr[i]) {
+            swap(&arr[i], &arr[arr[i] - 1]);
+        } else {
+            i++;
+        }
+    }
+
+    for (i = 0; i < n; i++) {
+        if (arr[i] != i + 1)
+            return i + 1;
+    }
+
+    return n + 1;
+}
+
+void displayArray(int arr[], int n) {
+    for (int i = 0; i < n; i++)
+        printf("%d ", arr[i]);
+
+    printf("\n");
+}
+
+int main() {
+    int choice, n, k, arr[MAX];
+
+    do {
+        printf("\n===== EXPERIMENT 4 =====\n");
+        printf("1. Maximize Product of Array Elements\n");
+        printf("2. Find Kth Largest Element\n");
+        printf("3. Find nth Fibonacci Number\n");
+        printf("4. Find Smallest Missing Positive Integer\n");
+        printf("0. Exit\n");
+        printf("Enter your choice: ");
+        scanf("%d", &choice);
+
+        switch (choice) {
+            case 1:
+                printf("Enter array size: ");
+                scanf("%d", &n);
+
+                if (n < 1 || n > MAX) {
+                    printf("Invalid array size.\n");
+                    break;
+                }
+
+                printf("Enter array elements: ");
+                for (int i = 0; i < n; i++)
+                    scanf("%d", &arr[i]);
+
+                printf("Maximum product: %lld\n",
+                       maxProduct(arr, n));
+                break;
+
+            case 2:
+                printf("Enter array size: ");
+                scanf("%d", &n);
+
+                if (n < 1 || n > MAX) {
+                    printf("Invalid array size.\n");
+                    break;
+                }
+
+                printf("Enter array elements: ");
+                for (int i = 0; i < n; i++)
+                    scanf("%d", &arr[i]);
+
+                printf("Enter K (1 to %d): ", n);
+                scanf("%d", &k);
+
+                if (k < 1 || k > n) {
+                    printf("Invalid value of K.\n");
+                    break;
+                }
+
+                printf("Kth largest element: %d\n",
+                       quickSelect(arr, 0, n - 1, k - 1));
+                break;
+
+            case 3:
+                printf("Enter n (0 to 92): ");
+                scanf("%d", &n);
+
+                if (n < 0 || n > 92) {
+                    printf("Invalid value of n.\n");
+                    break;
+                }
+
+                for (int i = 0; i <= 92; i++)
+                    fibMemo[i] = -1;
+
+                printf("Fibonacci number: %lld\n",
+                       fibonacci(n));
+                break;
+
+            case 4:
+                printf("Enter array size: ");
+                scanf("%d", &n);
+
+                if (n < 1 || n > MAX) {
+                    printf("Invalid array size.\n");
+                    break;
+                }
+
+                printf("Enter array elements: ");
+                for (int i = 0; i < n; i++)
+                    scanf("%d", &arr[i]);
+
+                printf("Original array: ");
+                displayArray(arr, n);
+
+                printf("Smallest missing positive integer: %d\n",
+                       smallestMissingPositive(arr, n));
+                break;
+
+            case 0:
+                printf("Program terminated.\n");
+                break;
+
+            default:
+                printf("Invalid choice. Try again.\n");
+        }
+
+    } while (choice != 0);
+
+    return 0;
+}
